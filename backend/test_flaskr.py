@@ -15,7 +15,7 @@ class TriviaTestCase(unittest.TestCase):
         self.app = create_app()
         self.client = self.app.test_client
         self.database_name = "trivia_test"
-        self.database_path = "postgres://{}/{}".format('localhost:5432', self.database_name)
+        self.database_path = "postgres://{}:{}@{}/{}".format('postgres', 'postgres', 'localhost:5432', self.database_name)
         setup_db(self.app, self.database_path)
 
         # binds the app to the current context
@@ -29,10 +29,92 @@ class TriviaTestCase(unittest.TestCase):
         """Executed after reach test"""
         pass
 
-    """
-    TODO
-    Write at least one test for each test for successful operation and for expected errors.
-    """
+
+    def test_get_categories(self):
+        response = self.client().get('/categories')
+        data = json.loads(response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(data['categories'])
+        self.assertEqual(len(data['categories']), 6)
+
+    def test_get_questions(self):
+        response = self.client().get('/questions')
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(data['categories'])
+        self.assertTrue(data['questions'])
+    
+    def test_successful_delete(self):
+        res = self.client().delete('/questions/4')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['message'], 'Successfully deleted')
+
+    def test_unsuccessful_delete(self):
+        res = self.client().delete('/questions/10000')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Unprocessable Entity')
+    
+    def test_create_question(self):
+        payload = {
+            'question': 'The answer to life, the universe and everything?',
+            'answer': 42,
+            'difficulty': 3,
+            'category': 1,
+        }
+        response = self.client().post('/questions/create', json=payload)
+        data = json.loads(response.data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['message'], 'Successfully Created!')
+    
+    def test_400_create_question(self):
+        payload = {
+            'question': '',
+            'answer': '',
+            'difficulty': 3,
+            'category': 1,
+        }
+        response = self.client().post('/questions/create', json=payload)
+        data = json.loads(response.data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Bad Request, pls check your inputs')
+    
+    def test_search_questions(self):
+        payload = {
+            'searchTerm': 'the human body',
+        }
+        response = self.client().post('/questions', json=payload)
+        data = json.loads(response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['questions']), 1)
+    
+    def test_400_search_questions(self):
+        payload = {
+            'searchTerm': '',
+        }
+        response = self.client().post('/questions', json=payload)
+        data = json.loads(response.data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Bad Request, pls check your inputs')
+    
+    def test_404_search_questions(self):
+        payload = {
+            'searchTerm': 'somerandomsearchstring',
+        }
+        response = self.client().post('/questions', json=payload)
+        data = json.loads(response.data)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Resource not found')
 
 
 # Make the tests conveniently executable

@@ -35,7 +35,7 @@ def create_app(test_config=None):
         categories = Category.query.all()
         return jsonify({
             'categories': [category.format() for category in categories],
-        })
+        }), 200
     except:
         abort(500)
         
@@ -56,7 +56,7 @@ def create_app(test_config=None):
                 'questions': questions[start:end],
                 'total_questions': count,
                 'categories': [c.format() for c in categories],
-            })
+            }), 200
         except:
             abort(500)
 
@@ -71,9 +71,9 @@ def create_app(test_config=None):
           question = Question.query.get(id)
           question.delete()
           return jsonify({
-            'status_code': 200,
+            'success': True,
             'message': "Successfully deleted"
-          })
+          }), 200
       except:
           abort(422)
 
@@ -107,9 +107,9 @@ def create_app(test_config=None):
         )
         question.insert()
         return jsonify({
-            'status_code': 201,
-            'message': "Successfully Added"
-        })
+            'success': True,
+            'message': 'Successfully Created!'
+        }), 201
     except:
         abort(422)
 
@@ -130,7 +130,7 @@ def create_app(test_config=None):
             abort(404)
         questions = [q.format() for q in questions]  
         return jsonify({
-        'status_code': 200,
+        'success': True,
         'questions': questions
         }), 200
     except:
@@ -167,7 +167,6 @@ def create_app(test_config=None):
   '''
 
 
-
   '''
   Create error handlers for all expected errors
   '''
@@ -175,7 +174,7 @@ def create_app(test_config=None):
   @app.errorhandler(400)
   def bad_request(error):
     return jsonify({
-        "status_code": 400,
+        "success": False,
         "message": "Bad Request, pls check your inputs"
     }), 400
 
@@ -183,7 +182,7 @@ def create_app(test_config=None):
   @app.errorhandler(404)
   def not_found(error):
     return jsonify({
-        "status_code": 404,
+        "success": False,
         "message": "Resource not found"
     }), 404
 
@@ -191,7 +190,7 @@ def create_app(test_config=None):
   @app.errorhandler(422)
   def unprocessable_entity(error):
       return jsonify({
-          "status_code": 422,
+          "success": False,
           "message": "Unprocessable Entity"
       }), 422
 
@@ -199,7 +198,7 @@ def create_app(test_config=None):
   @app.errorhandler(500)
   def internal_error(error):
       return jsonify({
-          "status_code": 500,
+          "success": False,
           "message": "Unable to load questions. Please try your request again"
       }), 500
 
