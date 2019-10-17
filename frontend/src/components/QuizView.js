@@ -3,7 +3,7 @@ import $ from 'jquery';
 
 import '../stylesheets/QuizView.css';
 
-const questionsPerPlay = 5; 
+let questionsPerPlay = 0; 
 
 class QuizView extends Component {
   constructor(props){
@@ -36,7 +36,37 @@ class QuizView extends Component {
   }
 
   selectCategory = ({type, id=0}) => {
-    this.setState({quizCategory: {type, id}}, this.getNextQuestion)
+    if(id==0){
+        $.ajax({
+            url: `/questions`,
+            type: "GET",
+            success: (result) => {
+                questionsPerPlay = result.total_questions
+                this.setState({quizCategory: {type, id}}, this.getNextQuestion)
+                return;
+            },
+            error: (error) => {
+                console.log(111, error)
+                alert(error.responseJSON.message)
+                return;
+            }
+        })
+    }
+    else {
+        $.ajax({
+            url: `/categories/${id}/questions`,
+            type: "GET",
+            success: (result) => {
+                questionsPerPlay = result.totalQuestions
+                this.setState({quizCategory: {type, id}}, this.getNextQuestion)
+                return;
+            },
+            error: (error) => {
+                alert(error.responseJSON.message)
+                return;
+            }
+        })
+    }  
   }
 
   handleChange = (event) => {
@@ -48,7 +78,7 @@ class QuizView extends Component {
     if(this.state.currentQuestion.id) { previousQuestions.push(this.state.currentQuestion.id) }
 
     $.ajax({
-      url: '/quizzes', //TODO: update request URL
+      url: '/quizzes', // TODO: update request URL
       type: "POST",
       dataType: 'json',
       contentType: 'application/json',
@@ -71,7 +101,7 @@ class QuizView extends Component {
         return;
       },
       error: (error) => {
-        alert('Unable to load question. Please try your request again')
+        alert(error.responseJSON.message)
         return;
       }
     })
@@ -112,7 +142,6 @@ class QuizView extends Component {
                       value={category.id}
                       className="play-category"
                       onClick={() => this.selectCategory({type:category.type, id:category.id})}>
-                      {/* {this.state.categories[category.id]} */}
                       {category.type}
                     </div>
                   )
