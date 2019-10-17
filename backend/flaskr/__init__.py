@@ -184,10 +184,10 @@ def create_app(test_config=None):
                 break
             count += 1
         
-        question = next_potential_question.format()
+        next_question = next_potential_question.format()
         return jsonify({
             'success': True,
-            'question': question,
+            'question': next_question,
         }), 200
     except:
         abort(500)

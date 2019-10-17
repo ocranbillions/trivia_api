@@ -37,6 +37,7 @@ class QuizView extends Component {
 
   selectCategory = ({type, id=0}) => {
     if(id==0){
+        // Get all questions
         $.ajax({
             url: `/questions`,
             type: "GET",
@@ -53,6 +54,7 @@ class QuizView extends Component {
         })
     }
     else {
+        // Get questions for a given category
         $.ajax({
             url: `/categories/${id}/questions`,
             type: "GET",
