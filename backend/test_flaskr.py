@@ -9,7 +9,7 @@ from models import setup_db, Question, Category
 
 class TriviaTestCase(unittest.TestCase):
     """This class represents the trivia test case"""
-
+   
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app()
@@ -47,7 +47,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['questions'])
     
     def test_successful_delete(self):
-        res = self.client().delete('/questions/4')
+        res = self.client().delete('/questions/11')
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
@@ -115,8 +115,22 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Resource not found')
+    
+    def test_game_play(self):
+        payload = {
+            'previous_questions': [3],
+            'quiz_category': {
+                'type': 'Sports',
+                'id': 6
+            }
+        }
+        response = self.client().post('/quizzes', json=payload)
+        data = json.loads(response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['question'])
 
-
+# dropdb trivia_test && createdb trivia_test && psql trivia_test < trivia.psql && python test_flaskr.py
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()

@@ -147,24 +147,51 @@ def create_app(test_config=None):
         questions = [q.format() for q in questions]
         count = len(questions)
         return jsonify({
-        'questions': questions,
-        'totalQuestions': count,
-        'currentCategory': category_id
+            'questions': questions,
+            'totalQuestions': count,
+            'currentCategory': category_id
         })
     except:
         abort(500)
 
   '''
-  @TODO: 
-  Create a POST endpoint to get questions to play the quiz. 
-  This endpoint should take category and previous question parameters 
-  and return a random questions within the given category, 
-  if provided, and that is not one of the previous questions. 
-
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not. 
+  Enable Game Play
   '''
+  @app.route('/quizzes', methods=['POST'])
+  def play():
+    try:
+        data = request.get_json()
+        previous_questions = data.get('previous_questions')
+        category = data.get('quiz_category')
+        
+        if category['id'] == 0:
+            questions = Question.query.all()
+        else:
+            questions = Question.query.filter_by(category=category['id']).all()
+
+        random_index = random.randint(0, len(questions)-1)
+        next_potential_question = questions[random_index]
+
+        selected = False
+        count = 0
+        while selected is False:
+            if next_potential_question.id in previous_questions:
+                random_index = random.randint(0, len(questions)-1)
+                next_potential_question = questions[random_index]
+            else:
+                selected = True
+            if count == len(questions):
+                break
+            count += 1
+        
+        question = next_potential_question.format()
+        return jsonify({
+            'success': True,
+            'question': question,
+        }), 200
+    except:
+        abort(500)
+
 
 
   '''

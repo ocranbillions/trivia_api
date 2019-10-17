@@ -40,13 +40,6 @@ class FormView extends Component {
       category: this.state.category
     })
 
-    // this.setState({
-    //   question: "",
-    //   answer: "",
-    //   difficulty: 1,
-    //   category: 1,
-    // })
-
     $.ajax({
       url: '/questions/create', //TODO: update request URL
       type: "POST",
